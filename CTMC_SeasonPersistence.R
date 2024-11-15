@@ -1,5 +1,5 @@
   
-
+  
 ###############################################################################
 #       Stochastic simulation of the Seasonal Ebola model 
 
@@ -7,16 +7,30 @@
 #           Drake Lab, CEID, University of Georgia, USA
 #                     November 2024
 ###############################################################################
- 
-# Continuous-time Markov chain (CTMC) model
-# implemented by using the Gillespie's stochastic simulation algorithm 
-# it will be called in the main script called Deterministic_Stochastic_Model.Rmd
 
-##############################################################################
+# This code is to estimate the disease persistence probability in the human 
+# settlement region. 
+###############################################################################
 
-CTMC_Ebola <- function(params, t_max)  {
+
+
+
+results_seasonality <- list() # to save the model simulation results
+
+extinction_probability <- vector() # to save the extinction probability
+
+seasonality_vector <- seq(0.1,5,by = (5-0.1)/9) # 10 values of seasonality amplitude
+
+
+
+for(season_indx in 1:10){ # looping over seasonality amplitude
   
-  
+
+
+num_stoch_real = 1 # initialize the number of stochastic realizations
+
+while(num_stoch_real <= 200){ # looping over the number of stochastic realization
+
 # initial population sizes in patches A and B
   
   N_A = 100
@@ -32,13 +46,22 @@ CTMC_Ebola <- function(params, t_max)  {
   I_B = N_B - S_B
   R_B = 0   
   
-  
+
   #############################################################################
-  # time (measured in years)
+  # Model parameters 
   
-  simulation_time = 0 # simulation time
-  
-  #t_max = 1  # maximal simulation time in years
+  params <- list(
+    N_A = 100,
+    N_B = 1000,
+    mu_ = 0.02,
+    gamma_A = 12,
+    gamma_B = 12,
+    beta_A_base = 60, 
+    beta_B_base = 5, 
+    phi_AB_base = 0.4, 
+    phi_BA_base = 0.04,
+    seasonality = seasonality_vector[season_indx]
+  )
   
   
   #############################################################################
@@ -52,10 +75,13 @@ CTMC_Ebola <- function(params, t_max)  {
   #############################################################################
   # stochastic sampling using while loop
   
-  n = 0 
+
+  simulation_time = 0 # simulation time
+    
+  t_max = 10  # maximal simulation time in years
+  
   while(simulation_time <= t_max){
     
-    #print(simulation_time)
     
     ###########################################################################
     # transmission rate with seasonality
@@ -82,7 +108,7 @@ CTMC_Ebola <- function(params, t_max)  {
     infected_death_in_patch_A <- params$mu_*I_A
     recovered_death_in_patch_A <- params$mu_*R_A
 
-    transmission_in_patch_A <- params$beta_A*(I_A/N_A)*S_A + 5# add 15 to this rate to avoid fluctuation-driven extinction
+    transmission_in_patch_A <- params$beta_A*(I_A/N_A)*S_A + 5 # we added a constant to avoid fluctuation-driven extinction
     recovery_in_patch_A <- params$gamma_A*I_A
     
 
@@ -93,7 +119,7 @@ CTMC_Ebola <- function(params, t_max)  {
     infected_death_in_patch_B <- params$mu_*I_B
     recovered_death_in_patch_B <- params$mu_*R_B
     
-    transmission_in_patch_B <- params$beta_B*(I_B/N_B)*S_B + 5# add 15 to this rate to avoid fluctuation-driven extinction
+    transmission_in_patch_B <- params$beta_B*(I_B/N_B)*S_B + 5
     recovery_in_patch_B <- params$gamma_B*I_B
     
     ###########################################################################
@@ -213,7 +239,6 @@ CTMC_Ebola <- function(params, t_max)  {
      R_B = R_B - 1
    }
 
-    n = n + 1
     
     # update state variables
     
@@ -232,7 +257,40 @@ CTMC_Ebola <- function(params, t_max)  {
       
   } # ending while loop
 
+
   
-  return(as.data.frame(results_))
+  ##############################################################################################################
+  # Disease extinction probability per unit time
+  
+  
+  indx = as.integer(results_$infected_B > 0) # counting how many times does the disease persist in human settlement region
+  # logical vector with 0s and 1s with the same length as infected_B
+  
+  extinction_probability[num_stoch_real] <- sum(indx)/length(indx) # calculating the persistence probability
+  
+  num_stoch_real <- num_stoch_real + 1 # advancing the number of stochastic realizations
+  
+  }
+ 
+results_seasonality[[season_indx]] <- extinction_probability  # saving persistence probability as a function of seasonality amplitude
 }
+
+results_seasonality
+
+
+################################################################################
+# Plotting the outputs
+################################################################################
+
+par(mfrow = c(1,1), mai = c(0.9,0.9,0.4,0.2))
+  boxplot(results_seasonality,
+          xlab = "Seasonality strength",
+          ylab = "Disease persistence probability",
+          names = c(0.1,0.6,1.2,1.7,2.3,2.8,3.4,3.9,4.5,5),
+          cex.lab = 1.2, cex.axis = 1.2,
+          ylim = c(0,1),
+          col = "orange",
+          border = "brown"
+  )
   
+  title("Low-risk settlement patch", cex.main = 1.6, font.main = 1)
