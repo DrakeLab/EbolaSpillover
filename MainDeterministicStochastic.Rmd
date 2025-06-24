@@ -1475,7 +1475,7 @@ loop_ind <- c(1,2,3)
 # Plot seasonality amplitude -- one year
 
 
-```{r, echo=FALSE, fig.width = 9, fig.height = 3}
+```{r fig6, echo=FALSE, fig.width = 9, fig.height = 3}
 
 
 # deterministic model outputs as data frame
@@ -1604,7 +1604,7 @@ text(0.5,107, expression(paste(sigma == 3)), xpd = NA, cex = 2)
 The epidemic peak as a function of model parameters: seasonality and dispersal
 In the following, we will run the simulation for one year
 
-```{r fig6, echo=FALSE}
+```{r, echo=FALSE}
 
 
 # calling the deterministic model from outside this markdown document
