@@ -1521,7 +1521,7 @@ text(0.5,107, expression(paste(sigma == 0.1)), xpd = NA, cex = 2)
 
 
 # adding a legend:
-legend("right", c("Endemic patch", "Episodic patch"),
+legend("right", c("Reservoir patch", "Settlement patch"),
        col = c("orangered", "red4"), lty = 1, bty = "n", cex = 1.4, lwd = 3)
 
 
@@ -1902,7 +1902,7 @@ lines(CTMC_season_,CTMC_out_season_B, type = "l", col = "red4", lwd = 2)
 
 
 
-legend(0.3, 37, c("Endemic patch", "Episodic patch"),
+legend(0.3, 37, c("Reservoir patch", "Settlement patch"),
        col = c("orangered", "red4"), lty = 1, bty = "n", cex = 1.1, lwd = 3)
 text(0.1,85, "A", xpd = NA, cex = 1.6)
 
